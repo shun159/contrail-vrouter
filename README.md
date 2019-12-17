@@ -22,12 +22,19 @@ module.
 building vrouter.ko for a specific OS
 ==================================
 
-1. Initialize the repository
-$ repo init -u git@github.com:Juniper/contrail-vnc -m vrouter-manifest.xml
-
-2. Sync the repo. This will fetch vrouter, build and sandesh repositories.
-$ repo sync
-
-3. Build vrouter
-$ scons vrouter
-
+```shellsession
+$ apt install -y libboost-all-dev libnl-genl-3-dev libxml2-dev \
+    liburcu-dev byacc flex libpcap-dev scons python python-pip \
+    pkg-config zlib1g-dev libglib2.0-dev libfdt-dev libpixman-1-dev \
+    cloud-image-utils
+$ wget http://ubuntu-cloud.archive.canonical.com/ubuntu/pool/main/libu/liburcu/liburcu2_0.8.5-1ubuntu1~cloud0_amd64.deb
+$ wget http://ubuntu-cloud.archive.canonical.com/ubuntu/pool/main/libu/liburcu/liburcu-dev_0.8.5-1ubuntu1~cloud0_amd64.deb
+$ sudo dpkg -i liburcu2_0.8.5-1ubuntu1~cloud0_amd64.deb
+$ sudo dpkg -i liburcu-dev_0.8.5-1ubuntu1~cloud0_amd64.deb
+$ git clone https://github.com/Juniper/contrail-vrouter vrouter
+$ git clone https://github.com/Juniper/contrail-build tools/build
+$ git clone https://github.com/Juniper/contrail-sandesh tools/sandesh
+$ git clone https://github.com/Juniper/contrail-common src/contrail-common
+$ scons vrouter -j2 --kernel-dir=/lib/modules/5.0.0-37-generic/build/ --without-dpdk --add-opts=-std=c99
+$ cd vrouter; sudo insmod vrouter.ko
+```

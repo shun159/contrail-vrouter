@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <sys/sysmacros.h>
 
 #if defined(__linux__)
 #include <linux/netlink.h>
