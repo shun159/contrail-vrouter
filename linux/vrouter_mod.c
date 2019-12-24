@@ -405,12 +405,20 @@ lh_phead_len(struct vr_packet *pkt)
 static void
 lh_get_time(uint64_t *sec, uint64_t *usec)
 {
-    struct timeval t;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+  struct timespec t;
 
-    do_gettimeofday(&t);
-    *sec = t.tv_sec;
-    *usec = t.tv_usec;
+  getnstimeofday(&t);
+  *sec = t.tv_sec;
+  *usec = t.tv_nsec / 1000;
+#else
+  struct timeval t;
 
+  do_gettimeofday(&t);
+  *sec = t.tv_sec;
+  *usec = t.tv_usec;
+#endif
+  
     return;
 }
 
