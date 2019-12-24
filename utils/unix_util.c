@@ -9,6 +9,11 @@
 #include <sys/socket.h>
 #include <sys/sysmacros.h>
 
+#include <linux/version.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+#include <sys/sysmacros.h>
+#endif
+
 #if defined(__linux__)
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>

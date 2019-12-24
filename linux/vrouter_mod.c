@@ -406,17 +406,17 @@ static void
 lh_get_time(uint64_t *sec, uint64_t *usec)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
-    struct timespec t;
+  struct timespec t;
 
-    getnstimeofday(&t);
-    *sec = t.tv_sec;
-    *usec = t.tv_nsec / 1000;
+  getnstimeofday(&t);
+  *sec = t.tv_sec;
+  *usec = t.tv_nsec / 1000;
 #else
-    struct timeval t;
+  struct timeval t;
 
-    do_gettimeofday(&t);
-    *sec = t.tv_sec;
-    *usec = t.tv_usec;
+  do_gettimeofday(&t);
+  *sec = t.tv_sec;
+  *usec = t.tv_usec;
 #endif
 
     return;
