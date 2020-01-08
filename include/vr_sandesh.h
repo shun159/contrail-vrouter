@@ -6,12 +6,12 @@
 #ifndef __VR_SANDESH_H__
 #define __VR_SANDESH_H__
 
-#define VR_FLOW_MAX_CPUS    128
+#define VR_FLOW_MAX_CPUS 128
 
 struct sandesh_object_md {
-    unsigned int obj_len;
-    char *obj_type_string;
-    unsigned int (*obj_get_size)(void *);
+  unsigned int obj_len;
+  char *obj_type_string;
+  unsigned int (*obj_get_size)(void *);
 };
 
 void *sandesh_alloc(unsigned int);

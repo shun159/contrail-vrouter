@@ -44,48 +44,37 @@ int flowmmap(struct cdev *, vm_ooffset_t, vm_paddr_t *, int, vm_memattr_t *);
 void vr_mem_exit(void);
 int vr_mem_init(void);
 
-int
-flowopen(struct cdev *dev __unused, int flags, int fmt __unused,
-    struct thread *td)
-{
+int flowopen(struct cdev *dev __unused, int flags, int fmt __unused, struct thread *td) {
 
-	return (0);
+  return (0);
 }
 
-int flowmmap(struct cdev *kdev, vm_ooffset_t offset, vm_paddr_t *paddr,
-    int prot, vm_memattr_t *memattr)
-{
-	struct vrouter *router;
+int flowmmap(struct cdev *kdev, vm_ooffset_t offset, vm_paddr_t *paddr, int prot,
+             vm_memattr_t *memattr) {
+  struct vrouter *router;
 
-	/* Support only for one vrouter */
-	router = (struct vrouter *)vrouter_get(0);
+  /* Support only for one vrouter */
+  router = (struct vrouter *)vrouter_get(0);
 
-	*paddr = vtophys(vr_flow_get_va(router, offset));
-	return (0);
+  *paddr = vtophys(vr_flow_get_va(router, offset));
+  return (0);
 }
 
 static struct cdev *mem_cdev;
 
 static struct cdevsw mem_cdevsw = {
-	.d_version =		D_VERSION,
-	.d_flags =		D_MEM,
-	.d_open =		flowopen,
-	.d_mmap =		flowmmap,
-	.d_name =		"flow",
+    .d_version = D_VERSION,
+    .d_flags = D_MEM,
+    .d_open = flowopen,
+    .d_mmap = flowmmap,
+    .d_name = "flow",
 };
 
-void
-vr_mem_exit(void)
-{
+void vr_mem_exit(void) { destroy_dev(mem_cdev); }
 
-	destroy_dev(mem_cdev);
-}
+int vr_mem_init(void) {
 
-int
-vr_mem_init(void)
-{
+  mem_cdev = make_dev(&mem_cdevsw, 0, UID_ROOT, GID_KMEM, 0640, "flow");
 
-	mem_cdev = make_dev(&mem_cdevsw, 0, UID_ROOT, GID_KMEM, 0640, "flow");
-
-	return (0);
+  return (0);
 }

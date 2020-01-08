@@ -16,9 +16,6 @@ void vr_itable_delete(vr_itable_t t, vr_itable_del_cb_t func);
 void *vr_itable_get(vr_itable_t t, unsigned int index);
 void *vr_itable_del(vr_itable_t t, unsigned int index);
 void *vr_itable_set(vr_itable_t t, unsigned int index, void *data);
-int vr_itable_trav(vr_itable_t t, vr_itable_trav_cb_t func,
-                               unsigned int marker, void *udata);
-
+int vr_itable_trav(vr_itable_t t, vr_itable_trav_cb_t func, unsigned int marker, void *udata);
 
 #endif /* __VR_INDEX_TABLE_H__ */
-

@@ -10,17 +10,17 @@
 extern "C" {
 #endif
 
-#define LINUX_PLATFORM  1
-#define DPDK_PLATFORM   2
-#define NIC_PLATFORM    3
-#define VTEST_PLATFORM  4
+#define LINUX_PLATFORM 1
+#define DPDK_PLATFORM 2
+#define NIC_PLATFORM 3
+#define VTEST_PLATFORM 4
 
 #define DEFAULT_SECTION "DEFAULT"
-#define PLATFORM_KEY    "platform"
-#define PLATFORM_DPDK   "dpdk"
-#define PLATFORM_NIC    "nic"
-#define PLATFORM_VTEST  "vtest"
-#define OFFLOAD_KEY     "offload"
+#define PLATFORM_KEY "platform"
+#define PLATFORM_DPDK "dpdk"
+#define PLATFORM_NIC "nic"
+#define PLATFORM_VTEST "vtest"
+#define OFFLOAD_KEY "offload"
 #define OFFLOAD_ENABLED "enabled"
 
 extern int read_int(const char *section, const char *key);
@@ -42,7 +42,6 @@ extern int get_protocol(void);
 extern int parse_ini_file(void);
 extern void set_platform_vtest(void);
 extern bool platform_is_vtest(void);
-
 
 #ifdef __cplusplus
 }

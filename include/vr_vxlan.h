@@ -8,7 +8,7 @@
 
 #include "vr_os.h"
 
-#define VR_VXLAN_VNID_SHIFT             8
+#define VR_VXLAN_VNID_SHIFT 8
 
 struct vrouter;
 struct vr_forwarding_md;
@@ -16,10 +16,6 @@ struct vr_packet;
 
 extern int vr_vxlan_init(struct vrouter *);
 extern void vr_vxlan_exit(struct vrouter *, bool);
-extern int vr_vxlan_input(struct vrouter *, struct vr_packet *,
-                                    struct vr_forwarding_md *);
-
-
-
+extern int vr_vxlan_input(struct vrouter *, struct vr_packet *, struct vr_forwarding_md *);
 
 #endif

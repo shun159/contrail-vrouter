@@ -11,13 +11,9 @@
 extern "C" {
 #endif
 
-enum vnsw_nl_attrs {
-    NL_ATTR_UNSPEC,
-    NL_ATTR_VR_MESSAGE_PROTOCOL,
-    NL_ATTR_MAX
-};
+enum vnsw_nl_attrs { NL_ATTR_UNSPEC, NL_ATTR_VR_MESSAGE_PROTOCOL, NL_ATTR_MAX };
 
-#define SANDESH_REQUEST     1
+#define SANDESH_REQUEST 1
 
 #ifdef __cplusplus
 }

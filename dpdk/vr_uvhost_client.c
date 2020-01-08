@@ -15,16 +15,14 @@ static vr_uvh_client_t vr_uvh_clients[VR_UVH_MAX_CLIENTS];
 /*
  * vr_uvhost_client_init - initialize the client array.
  */
-void
-vr_uvhost_client_init(void)
-{
-    int i;
+void vr_uvhost_client_init(void) {
+  int i;
 
-    for (i = 0; i < VR_UVH_MAX_CLIENTS; i++) {
-        vr_uvh_clients[i].vruc_fd = -1;
-    }
+  for (i = 0; i < VR_UVH_MAX_CLIENTS; i++) {
+    vr_uvh_clients[i].vruc_fd = -1;
+  }
 
-    return;
+  return;
 }
 
 /*
@@ -34,22 +32,20 @@ vr_uvhost_client_init(void)
  *
  * Returns a pointer to the client state on success, NULL otherwise.
  */
-vr_uvh_client_t *
-vr_uvhost_new_client(int fd, char *path, int cidx)
-{
-    if (cidx >= VR_UVH_MAX_CLIENTS) {
-        return NULL;
-    }
+vr_uvh_client_t *vr_uvhost_new_client(int fd, char *path, int cidx) {
+  if (cidx >= VR_UVH_MAX_CLIENTS) {
+    return NULL;
+  }
 
-    if (vr_uvh_clients[cidx].vruc_fd != -1) {
-        return NULL;
-    }
+  if (vr_uvh_clients[cidx].vruc_fd != -1) {
+    return NULL;
+  }
 
-    vr_uvh_clients[cidx].vruc_fd = fd;
-    strncpy(vr_uvh_clients[cidx].vruc_path, path, VR_UNIX_PATH_MAX - 1);
-    vr_uvh_clients[cidx].vruc_flags = 0;
+  vr_uvh_clients[cidx].vruc_fd = fd;
+  strncpy(vr_uvh_clients[cidx].vruc_path, path, VR_UNIX_PATH_MAX - 1);
+  vr_uvh_clients[cidx].vruc_flags = 0;
 
-    return &vr_uvh_clients[cidx];
+  return &vr_uvh_clients[cidx];
 }
 
 /*
@@ -57,41 +53,35 @@ vr_uvhost_new_client(int fd, char *path, int cidx)
  *
  * Returns nothing.
  */
-void
-vr_uvhost_del_client(vr_uvh_client_t *vru_cl)
-{
-    /* Remove both the socket we listen for and the socket we have accepted */
-    vr_uvhost_del_fds_by_arg(vru_cl);
+void vr_uvhost_del_client(vr_uvh_client_t *vru_cl) {
+  /* Remove both the socket we listen for and the socket we have accepted */
+  vr_uvhost_del_fds_by_arg(vru_cl);
 
-    vru_cl->vruc_fd = -1;
-    if (vru_cl->vruc_vhostuser_mode == VRNU_VIF_MODE_CLIENT)
-        unlink(vru_cl->vruc_path);
-    vru_cl->vruc_flags = 0;
+  vru_cl->vruc_fd = -1;
+  if (vru_cl->vruc_vhostuser_mode == VRNU_VIF_MODE_CLIENT)
+    unlink(vru_cl->vruc_path);
+  vru_cl->vruc_flags = 0;
 
-    return;
+  return;
 }
 
 /*
  * vr_uvhost_cl_set_fd - set the FD for a user space vhost client
  */
-void
-vr_uvhost_cl_set_fd(vr_uvh_client_t *vru_cl, int fd)
-{
-    vru_cl->vruc_fd = fd;
+void vr_uvhost_cl_set_fd(vr_uvh_client_t *vru_cl, int fd) {
+  vru_cl->vruc_fd = fd;
 
-    return;
+  return;
 }
 
 /*
  * vr_uvhost_get_client - Returns the client at the specified index, NULL if
  * it cannot be found.
  */
-vr_uvh_client_t *
-vr_uvhost_get_client(unsigned int cidx)
-{
-    if (cidx >= VR_UVH_MAX_CLIENTS) {
-        return NULL;
-    }
+vr_uvh_client_t *vr_uvhost_get_client(unsigned int cidx) {
+  if (cidx >= VR_UVH_MAX_CLIENTS) {
+    return NULL;
+  }
 
-    return &vr_uvh_clients[cidx];
+  return &vr_uvh_clients[cidx];
 }

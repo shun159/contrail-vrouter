@@ -44,38 +44,31 @@
 
 extern int vr_log_level;
 
-enum {
-    VR_ERR,
-    VR_INFO,
-    VR_DEBUG
-};
+enum { VR_ERR, VR_INFO, VR_DEBUG };
 
-#define vr_log(lvl, fmt, args...) \
-    do {\
-        if (vr_log_level >= lvl) \
-            printf("%s:"fmt, __func__, ##args); \
-    } while (0)
+#define vr_log(lvl, fmt, args...)                                                                  \
+  do {                                                                                             \
+    if (vr_log_level >= lvl)                                                                       \
+      printf("%s:" fmt, __func__, ##args);                                                         \
+  } while (0)
 
 struct vr_packet_wrapper {
-    /*
-     * NOTE!
-     * 'pkt' field must be first as we cast between wrapper and packet
-     */
-    struct vr_packet    vrw_pkt;
-    struct mbuf     *vrw_m;
+  /*
+   * NOTE!
+   * 'pkt' field must be first as we cast between wrapper and packet
+   */
+  struct vr_packet vrw_pkt;
+  struct mbuf *vrw_m;
 };
 
 /* mbuf<=>packet conversion */
-static __inline__ struct mbuf *
-vp_os_packet(struct vr_packet *pkt)
-{
-    /* Fetch original mbuf from packet structure */
-    return (((struct vr_packet_wrapper *)pkt)->vrw_m);
+static __inline__ struct mbuf *vp_os_packet(struct vr_packet *pkt) {
+  /* Fetch original mbuf from packet structure */
+  return (((struct vr_packet_wrapper *)pkt)->vrw_m);
 }
 
-struct vr_packet * freebsd_get_packet(struct mbuf *m,
-    struct vr_interface *vif);
-int freebsd_to_vr(struct vr_interface *vif, struct mbuf* m);
+struct vr_packet *freebsd_get_packet(struct mbuf *m, struct vr_interface *vif);
+int freebsd_to_vr(struct vr_interface *vif, struct mbuf *m);
 
 /* Contrail socket initialization/clean */
 int contrail_socket_init(void);
@@ -88,6 +81,6 @@ int vr_transport_request(struct socket *so, char *buf, size_t len);
 
 /* vhost && vif connection */
 void vhost_if_add(struct vr_interface *vif);
-void vhost_if_del(struct ifnet* ifp);
+void vhost_if_del(struct ifnet *ifp);
 
 #endif /* __VR_FREEBSD_H__ */

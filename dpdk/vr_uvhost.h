@@ -20,6 +20,4 @@ void vr_uvhost_wakeup(void);
 /* Global variables */
 extern vr_uvh_exit_callback_t vr_uvhost_exit_fn;
 
-
 #endif /* __VR_UVHOST_H__ */
-

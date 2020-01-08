@@ -45,8 +45,7 @@
  * @param t
  *   The type to cast the result into.
  */
-#define rte_pktmbuf_mtod_offset(m, t, o) \
-        ((t)((char *)(m)->buf_addr + (m)->data_off + (o)))
+#define rte_pktmbuf_mtod_offset(m, t, o) ((t)((char *)(m)->buf_addr + (m)->data_off + (o)))
 
 #endif /* RTE_VERSION */
 

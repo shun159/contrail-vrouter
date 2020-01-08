@@ -38,15 +38,13 @@ struct pollfd pollfds[MAX_UVHOST_FDS];
  *
  * Returns 0 on success, error otherwise.
  */
-int
-vr_uvhost_init(pthread_t *th, vr_uvh_exit_callback_t exit_fn)
-{
-    if (pthread_create(th, NULL, vr_uvhost_start, NULL)) {
-        return -1;
-    }
+int vr_uvhost_init(pthread_t *th, vr_uvh_exit_callback_t exit_fn) {
+  if (pthread_create(th, NULL, vr_uvhost_start, NULL)) {
+    return -1;
+  }
 
-    vr_uvhost_exit_fn = exit_fn;
-    return 0;
+  vr_uvhost_exit_fn = exit_fn;
+  return 0;
 }
 
 /*
@@ -56,20 +54,16 @@ vr_uvhost_init(pthread_t *th, vr_uvh_exit_callback_t exit_fn)
  *
  * Returns nothing.
  */
-static void
-vr_uvhost_exit(void)
-{
-    vr_uvhost_exit_fn();
+static void vr_uvhost_exit(void) {
+  vr_uvhost_exit_fn();
 
-    return;
+  return;
 }
 
-void
-vr_uvhost_wakeup(void)
-{
-    if (likely(vr_dpdk.uvhost_event_fd > 0)) {
-        eventfd_write(vr_dpdk.uvhost_event_fd, 1);
-    }
+void vr_uvhost_wakeup(void) {
+  if (likely(vr_dpdk.uvhost_event_fd > 0)) {
+    eventfd_write(vr_dpdk.uvhost_event_fd, 1);
+  }
 }
 
 /*
@@ -77,98 +71,90 @@ vr_uvhost_wakeup(void)
  *
  * Returns NULL if an error occurs. Otherwise, it runs forever.
  */
-void *
-vr_uvhost_start(void *arg)
-{
-    int s = 0, ret, err;
-    struct sockaddr_un sun;
-    nfds_t nfds;
+void *vr_uvhost_start(void *arg) {
+  int s = 0, ret, err;
+  struct sockaddr_un sun;
+  nfds_t nfds;
 
-    vr_uvhost_client_init();
+  vr_uvhost_client_init();
 
-    vr_uvhost_log("Starting uvhost server...\n");
-    vr_dpdk.uvhost_event_fd = eventfd(0, 0);
-    if (vr_dpdk.uvhost_event_fd == -1) {
-        vr_uvhost_log("    error creating event FD: %s (%d)\n",
-                        rte_strerror(errno), errno);
-        goto error;
+  vr_uvhost_log("Starting uvhost server...\n");
+  vr_dpdk.uvhost_event_fd = eventfd(0, 0);
+  if (vr_dpdk.uvhost_event_fd == -1) {
+    vr_uvhost_log("    error creating event FD: %s (%d)\n", rte_strerror(errno), errno);
+    goto error;
+  }
+  vr_uvhost_log("    server event FD is %d\n", vr_dpdk.uvhost_event_fd);
+
+  s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+  if (s == -1) {
+    vr_uvhost_log("    error creating server socket: %s (%d)\n", rte_strerror(errno), errno);
+    goto error;
+  }
+  vr_uvhost_log("    server socket FD is %d\n", s);
+
+  memset(&sun, 0, sizeof(sun));
+  sun.sun_family = AF_UNIX;
+  strncpy(sun.sun_path, vr_socket_dir, sizeof(sun.sun_path) - 1);
+  strncat(sun.sun_path, "/" VR_UVH_NL_SOCK_NAME, sizeof(sun.sun_path) - strlen(sun.sun_path) - 1);
+
+  mkdir(vr_socket_dir, VR_DEF_SOCKET_DIR_MODE);
+  unlink(sun.sun_path);
+  ret = bind(s, (struct sockaddr *)&sun, sizeof(sun));
+  if (ret == -1) {
+    vr_uvhost_log("    error binding server FD %d to %s: %s (%d)\n", s, sun.sun_path,
+                  rte_strerror(errno), errno);
+    goto error;
+  }
+
+  if (listen(s, 1) == -1) {
+    vr_uvhost_log("    error listening server socket FD %d: %s (%d)\n", s, rte_strerror(errno),
+                  errno);
+    goto error;
+  }
+
+  vr_uvhost_fds_init();
+
+  if (vr_uvhost_add_fd(vr_dpdk.uvhost_event_fd, UVH_FD_READ, NULL, NULL)) {
+    vr_uvhost_log("    error adding server event FD %d\n", vr_dpdk.uvhost_event_fd);
+    goto error;
+  }
+  if (vr_uvhost_add_fd(s, UVH_FD_READ, NULL, vr_uvh_nl_listen_handler)) {
+    vr_uvhost_log("    error adding server socket FD %d\n", s);
+    goto error;
+  }
+
+  while (1) {
+    vr_uvh_init_pollfds(pollfds, &nfds);
+
+    rcu_thread_offline();
+    if (poll(pollfds, nfds, -1) < 0) {
+      vr_uvhost_log("    error polling FDs: %s (%d)\n", rte_strerror(errno), errno);
+      goto error;
     }
-    vr_uvhost_log("    server event FD is %d\n", vr_dpdk.uvhost_event_fd);
 
-    s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-    if (s == -1) {
-        vr_uvhost_log("    error creating server socket: %s (%d)\n",
-                        rte_strerror(errno), errno);
-        goto error;
-    }
-    vr_uvhost_log("    server socket FD is %d\n", s);
+    if (vr_dpdk_is_stop_flag_set())
+      break;
 
-    memset(&sun, 0, sizeof(sun));
-    sun.sun_family = AF_UNIX;
-    strncpy(sun.sun_path, vr_socket_dir, sizeof(sun.sun_path) - 1);
-    strncat(sun.sun_path, "/"VR_UVH_NL_SOCK_NAME, sizeof(sun.sun_path)
-        - strlen(sun.sun_path) - 1);
+    rcu_thread_online();
 
-    mkdir(vr_socket_dir, VR_DEF_SOCKET_DIR_MODE);
-    unlink(sun.sun_path);
-    ret = bind(s, (struct sockaddr *) &sun, sizeof(sun));
-    if (ret == -1) {
-        vr_uvhost_log("    error binding server FD %d to %s: %s (%d)\n",
-                        s, sun.sun_path, rte_strerror(errno), errno);
-        goto error;
-    }
-
-    if (listen(s, 1) == -1) {
-        vr_uvhost_log("    error listening server socket FD %d: %s (%d)\n",
-                        s, rte_strerror(errno), errno);
-        goto error;
-    }
-
-    vr_uvhost_fds_init();
-
-    if (vr_uvhost_add_fd(vr_dpdk.uvhost_event_fd, UVH_FD_READ, NULL, NULL)) {
-        vr_uvhost_log("    error adding server event FD %d\n",
-                      vr_dpdk.uvhost_event_fd);
-        goto error;
-    }
-    if (vr_uvhost_add_fd(s, UVH_FD_READ, NULL, vr_uvh_nl_listen_handler)) {
-        vr_uvhost_log("    error adding server socket FD %d\n", s);
-        goto error;
-    }
-
-    while (1) {
-        vr_uvh_init_pollfds(pollfds, &nfds);
-
-        rcu_thread_offline();
-        if (poll(pollfds, nfds, -1) < 0) {
-            vr_uvhost_log("    error polling FDs: %s (%d)\n",
-                            rte_strerror(errno), errno);
-            goto error;
-        }
-
-        if (vr_dpdk_is_stop_flag_set())
-            break;
-
-        rcu_thread_online();
-
-        vr_uvh_call_fd_handlers(pollfds, nfds);
-    }
+    vr_uvh_call_fd_handlers(pollfds, nfds);
+  }
 
 error:
 
-    err = errno;
-    if (s) {
-        close(s);
-        unlink(sun.sun_path);
-    }
-    if (vr_dpdk.uvhost_event_fd > 0) {
-        close(vr_dpdk.uvhost_event_fd);
-        vr_dpdk.uvhost_event_fd = 0;
-    }
+  err = errno;
+  if (s) {
+    close(s);
+    unlink(sun.sun_path);
+  }
+  if (vr_dpdk.uvhost_event_fd > 0) {
+    close(vr_dpdk.uvhost_event_fd);
+    vr_dpdk.uvhost_event_fd = 0;
+  }
 
-    vr_uvhost_exit();
-    errno = err;
+  vr_uvhost_exit();
+  errno = err;
 
-    return NULL;
+  return NULL;
 }
-

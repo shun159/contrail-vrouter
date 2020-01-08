@@ -28,271 +28,223 @@ static bool platform_vtest = false;
 /*
  * API to set plafform as vtest; Used in vtest UT executions
  */
-void
-set_platform_vtest (void)
-{
-    platform_vtest = true;
-}
+void set_platform_vtest(void) { platform_vtest = true; }
 
 /*
  * API to check if platform is vtest
  */
-bool
-platform_is_vtest (void)
-{
-    return platform_vtest;
+bool platform_is_vtest(void) { return platform_vtest; }
+
+static void copy_line(char *buffer, const char *line, uint32_t *index) {
+  uint32_t i = 0;
+  if (line[0] == '#') {
+    return;
+  }
+
+  while (line[i]) {
+    if (isspace(line[i])) {
+      i++;
+      continue;
+    }
+    buffer[(*index)++] = line[i++];
+  }
+  buffer[(*index)++] = '\n';
 }
 
-static void
-copy_line(char *buffer, const char *line, uint32_t *index)
-{
-    uint32_t i = 0;
-    if (line[0] == '#') {
-        return;
-    }
+static int read_file_size(const char *file_path) {
+  struct stat stat_buffer;
 
-    while (line[i]) {
-        if (isspace(line[i])) {
-            i++;
-            continue;
-        }
-        buffer[(*index)++] = line[i++];
-    }
-    buffer[(*index)++] = '\n';
+  if (stat(file_path, &stat_buffer) == 0) {
+    return stat_buffer.st_size;
+  }
+  return 0;
 }
 
-static int
-read_file_size(const char *file_path)
-{
-    struct stat stat_buffer;
+int parse_ini_file(void) {
+  FILE *fp;
+  char line[4 * BUF_LENGTH];
+  size_t size;
+  uint32_t index = 0;
 
-    if (stat(file_path, &stat_buffer) == 0) {
-        return stat_buffer.st_size;
-    }
-    return 0;
-}
+  fp = fopen(ini_file, "r");
+  if (fp == NULL) {
+    return -1;
+  }
 
-int
-parse_ini_file(void)
-{
-    FILE     *fp;
-    char      line[4 * BUF_LENGTH];
-    size_t    size;
-    uint32_t  index = 0;
-
-    fp = fopen(ini_file, "r");
-    if (fp == NULL) {
-        return -1;
-    }
-
-    size = read_file_size(ini_file);
-    /*
-     * Allocate memory to hold read buffer
-     */
-    ini_data = calloc(size, sizeof(char));
-    if (ini_data == NULL) {
-        fclose(fp);
-        return -1;
-    }
-
-    while (fgets(line, sizeof(line), fp) != NULL) {
-        copy_line(ini_data, line, &index);
-    }
-
+  size = read_file_size(ini_file);
+  /*
+   * Allocate memory to hold read buffer
+   */
+  ini_data = calloc(size, sizeof(char));
+  if (ini_data == NULL) {
     fclose(fp);
-    return 0;
+    return -1;
+  }
+
+  while (fgets(line, sizeof(line), fp) != NULL) {
+    copy_line(ini_data, line, &index);
+  }
+
+  fclose(fp);
+  return 0;
 }
 
-bool
-read_value(const char *section, const char *key)
-{
-    const char *section_start = NULL;
-    const char *section_end = NULL;
-    const char *key_start = NULL;
-    const char *value_start = NULL;
-    char section_buffer[BUF_LENGTH];
-    char buffer[BUF_LENGTH];
+bool read_value(const char *section, const char *key) {
+  const char *section_start = NULL;
+  const char *section_end = NULL;
+  const char *key_start = NULL;
+  const char *value_start = NULL;
+  char section_buffer[BUF_LENGTH];
+  char buffer[BUF_LENGTH];
 
-    if (!ini_data || !section || !key) {
-        return false;
-    }
-
-    snprintf(section_buffer, sizeof(section_buffer), "[%s]", section);
-    /*
-     * Check if section is present
-     */
-    section_start = strstr(ini_data, section_buffer);
-
-    /*
-     * Section is missing
-     */
-    if (section_start == NULL) {
-        return false;
-    }
-
-    section_start += strlen(section_buffer) + 1;
-    section_end = strstr(section_start, "[");
-
-    key_start = strstr(section_start, key);
-    if (key_start == NULL) {
-        return false;
-    }
-
-    if (section_end && key_start > section_end) {
-        /* key not found in same section */
-        return false;
-    }
-
-    memset(value, 0, sizeof(value));
-    buffer[sizeof(buffer) - 1] = '\0';
-    strncpy(buffer, key_start, sizeof(buffer) - 1);
-    value_start = strtok(buffer, "=");
-    value_start = strtok(NULL, "=");
-    if (value_start) {
-        strcpy(value, value_start);
-        char *newline = strchr(value,'\n');
-        *newline = '\0';
-        return true;
-    }
+  if (!ini_data || !section || !key) {
     return false;
+  }
+
+  snprintf(section_buffer, sizeof(section_buffer), "[%s]", section);
+  /*
+   * Check if section is present
+   */
+  section_start = strstr(ini_data, section_buffer);
+
+  /*
+   * Section is missing
+   */
+  if (section_start == NULL) {
+    return false;
+  }
+
+  section_start += strlen(section_buffer) + 1;
+  section_end = strstr(section_start, "[");
+
+  key_start = strstr(section_start, key);
+  if (key_start == NULL) {
+    return false;
+  }
+
+  if (section_end && key_start > section_end) {
+    /* key not found in same section */
+    return false;
+  }
+
+  memset(value, 0, sizeof(value));
+  buffer[sizeof(buffer) - 1] = '\0';
+  strncpy(buffer, key_start, sizeof(buffer) - 1);
+  value_start = strtok(buffer, "=");
+  value_start = strtok(NULL, "=");
+  if (value_start) {
+    strcpy(value, value_start);
+    char *newline = strchr(value, '\n');
+    *newline = '\0';
+    return true;
+  }
+  return false;
 }
 
-int
-read_int(const char *section, const char *key)
-{
-    if (read_value(section, key) == false) {
-        return 0;
-    }
-    return atoi(value);
-}
-
-const char*
-read_string(const char *section, const char *key)
-{
-    if (read_value(section, key) == false) {
-        return NULL;
-    }
-    return value;
-}
-
-uint32_t
-read_ip(const char *section, const char *key)
-{
-    struct in_addr ip;
-
-    if (read_value(section, key) == false) {
-        return 0;
-    }
-
-    if (inet_pton(AF_INET, value, &ip) == 1) {
-        return ntohl(ip.s_addr);
-    }
+int read_int(const char *section, const char *key) {
+  if (read_value(section, key) == false) {
     return 0;
+  }
+  return atoi(value);
 }
 
-int
-get_domain(void)
-{
-    const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
-    if (platform &&
-       (strcmp(platform, PLATFORM_DPDK) == 0 ||
-        strcmp(platform, PLATFORM_NIC) == 0)) {
+const char *read_string(const char *section, const char *key) {
+  if (read_value(section, key) == false) {
+    return NULL;
+  }
+  return value;
+}
+
+uint32_t read_ip(const char *section, const char *key) {
+  struct in_addr ip;
+
+  if (read_value(section, key) == false) {
+    return 0;
+  }
+
+  if (inet_pton(AF_INET, value, &ip) == 1) {
+    return ntohl(ip.s_addr);
+  }
+  return 0;
+}
+
+int get_domain(void) {
+  const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
+  if (platform && (strcmp(platform, PLATFORM_DPDK) == 0 || strcmp(platform, PLATFORM_NIC) == 0)) {
 #ifdef AGENT_VROUTER_TCP
-        return AF_INET;
+    return AF_INET;
 #else
-        return AF_UNIX;
+    return AF_UNIX;
 #endif
-    }
-    if (platform_is_vtest()) {
-        return AF_UNIX;
-    }
-    return AF_NETLINK;
+  }
+  if (platform_is_vtest()) {
+    return AF_UNIX;
+  }
+  return AF_NETLINK;
 }
 
-int
-get_type(void)
-{
-    const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
-    if (platform &&
-        (strcmp(platform, PLATFORM_DPDK) == 0 ||
-         strcmp(platform, PLATFORM_NIC) == 0)) {
-        return SOCK_STREAM;
-    }
-    if (platform_is_vtest()) {
-        return SOCK_STREAM;
-    }
-    return SOCK_DGRAM;
+int get_type(void) {
+  const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
+  if (platform && (strcmp(platform, PLATFORM_DPDK) == 0 || strcmp(platform, PLATFORM_NIC) == 0)) {
+    return SOCK_STREAM;
+  }
+  if (platform_is_vtest()) {
+    return SOCK_STREAM;
+  }
+  return SOCK_DGRAM;
 }
 
-uint16_t
-get_port(void)
-{
-    const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
-    if (platform &&
-        (strcmp(platform, PLATFORM_DPDK) == 0 ||
-         strcmp(platform, PLATFORM_NIC) == 0)) {
-        return vr_netlink_port;
-    }
+uint16_t get_port(void) {
+  const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
+  if (platform && (strcmp(platform, PLATFORM_DPDK) == 0 || strcmp(platform, PLATFORM_NIC) == 0)) {
+    return vr_netlink_port;
+  }
+  return 0;
+}
+
+uint32_t get_ip(void) { return 0x7f000001; }
+
+int get_protocol(void) {
+  const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
+  if (platform && (strcmp(platform, PLATFORM_DPDK) == 0 || strcmp(platform, PLATFORM_NIC) == 0)) {
     return 0;
+  }
+  if (platform_is_vtest()) {
+    return 0;
+  }
+  return NETLINK_GENERIC;
 }
 
-uint32_t
-get_ip(void)
-{
-    return 0x7f000001;
+int get_platform(void) {
+  const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
+
+  if (platform) {
+    if (!strcmp(platform, PLATFORM_DPDK))
+      return DPDK_PLATFORM;
+    else if (!strcmp(platform, PLATFORM_NIC))
+      return NIC_PLATFORM;
+    else
+      return LINUX_PLATFORM;
+  }
+  if (platform_is_vtest()) {
+    return VTEST_PLATFORM;
+  }
+
+  return LINUX_PLATFORM;
 }
 
-int
-get_protocol(void)
-{
-    const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
-    if (platform &&
-        (strcmp(platform, PLATFORM_DPDK) == 0 ||
-         strcmp(platform, PLATFORM_NIC) == 0)) {
-        return 0;
-    }
-    if (platform_is_vtest()) {
-        return 0;
-    }
-    return NETLINK_GENERIC;
+const char *get_platform_str(void) {
+  if (platform_is_vtest()) {
+    return PLATFORM_VTEST;
+  }
+  return read_string(DEFAULT_SECTION, PLATFORM_KEY);
 }
 
-int
-get_platform(void)
-{
-    const char *platform = read_string(DEFAULT_SECTION, PLATFORM_KEY);
-
-    if (platform) {
-        if (!strcmp(platform, PLATFORM_DPDK))
-            return DPDK_PLATFORM;
-        else if (!strcmp(platform, PLATFORM_NIC))
-            return NIC_PLATFORM;
-        else
-            return LINUX_PLATFORM;
-    }
-    if (platform_is_vtest()) {
-        return VTEST_PLATFORM;
-    }
-
-    return LINUX_PLATFORM;
-}
-
-const char *
-get_platform_str(void)
-{
-    if (platform_is_vtest()) {
-        return PLATFORM_VTEST;
-    }
-    return read_string(DEFAULT_SECTION, PLATFORM_KEY);
-}
-
-bool
-get_offload_enabled(void)
-{
-    const char *offload_str = read_string(DEFAULT_SECTION, OFFLOAD_KEY);
-    if (offload_str) {
-        if (!strcmp(offload_str, OFFLOAD_ENABLED))
-            return true;
-    }
-    return false;
+bool get_offload_enabled(void) {
+  const char *offload_str = read_string(DEFAULT_SECTION, OFFLOAD_KEY);
+  if (offload_str) {
+    if (!strcmp(offload_str, OFFLOAD_ENABLED))
+      return true;
+  }
+  return false;
 }

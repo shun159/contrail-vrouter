@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define VHOST_KIND  "vhost"
+#define VHOST_KIND "vhost"
 #define VHOST_IFNAME "vhost0"
 
 #ifdef __KERNEL__
@@ -18,16 +18,16 @@ extern "C" {
 
 struct vhost_priv {
 #if defined(__linux__)
-    struct net_device *vp_dev;
+  struct net_device *vp_dev;
 #elif defined(__FreeBSD__)
-    struct ifnet *vp_ifp;
-    struct mtx vp_mtx;
+  struct ifnet *vp_ifp;
+  struct mtx vp_mtx;
 #endif
-    struct net_device *vp_phys_dev;
-    struct vrouter *vp_router;
-    struct vr_interface *vp_vifp;
-    int vp_db_index;
-    char vp_phys_name[VR_INTERFACE_NAME_LEN];
+  struct net_device *vp_phys_dev;
+  struct vrouter *vp_router;
+  struct vr_interface *vp_vifp;
+  int vp_db_index;
+  char vp_phys_name[VR_INTERFACE_NAME_LEN];
 };
 
 extern void vhost_detach_phys(struct net_device *);

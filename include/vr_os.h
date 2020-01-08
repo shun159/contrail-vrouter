@@ -7,36 +7,36 @@
 #ifndef __VR_OS_H__
 #define __VR_OS_H__
 
-#define __attribute__packed__open__                     /* do nothing */
-#define __attribute__packed__close__                    __attribute__((__packed__))
-#define __attribute__format__(...)                      __attribute__((format(__VA_ARGS__)))
-#define __attribute__unused__                           __attribute__((unused))
+#define __attribute__packed__open__ /* do nothing */
+#define __attribute__packed__close__ __attribute__((__packed__))
+#define __attribute__format__(...) __attribute__((format(__VA_ARGS__)))
+#define __attribute__unused__ __attribute__((unused))
 
-#define vr_sync_sub_and_fetch_16u(a, b)                 __sync_sub_and_fetch((a), (b))
-#define vr_sync_sub_and_fetch_32u(a, b)                 __sync_sub_and_fetch((a), (b))
-#define vr_sync_sub_and_fetch_32s(a, b)                 __sync_sub_and_fetch((a), (b))
-#define vr_sync_sub_and_fetch_64u(a, b)                 __sync_sub_and_fetch((a), (b))
-#define vr_sync_sub_and_fetch_64s(a, b)                 __sync_sub_and_fetch((a), (b))
-#define vr_sync_add_and_fetch_16u(a, b)                 __sync_add_and_fetch((a), (b))
-#define vr_sync_add_and_fetch_32u(a, b)                 __sync_add_and_fetch((a), (b))
-#define vr_sync_add_and_fetch_64u(a, b)                 __sync_add_and_fetch((a), (b))
-#define vr_sync_fetch_and_add_32u(a, b)                 __sync_fetch_and_add((a), (b))
-#define vr_sync_fetch_and_add_64u(a, b)                 __sync_fetch_and_add((a), (b))
-#define vr_sync_fetch_and_or_16u(a, b)                  __sync_fetch_and_or((a), (b))
-#define vr_sync_and_and_fetch_16u(a, b)                 __sync_and_and_fetch((a), (b))
-#define vr_sync_and_and_fetch_32u(a, b)                 __sync_and_and_fetch((a), (b))
-#define vr_sync_bool_compare_and_swap_8s(a, b, c)       __sync_bool_compare_and_swap((a), (b), (c))
-#define vr_sync_bool_compare_and_swap_8u(a, b, c)       __sync_bool_compare_and_swap((a), (b), (c))
-#define vr_sync_bool_compare_and_swap_16u(a, b, c)      __sync_bool_compare_and_swap((a), (b), (c))
-#define vr_sync_bool_compare_and_swap_32u(a, b, c)      __sync_bool_compare_and_swap((a), (b), (c))
-#define vr_sync_bool_compare_and_swap_p(a, b, c)        __sync_bool_compare_and_swap((a), (b), (c))
-#define vr_sync_val_compare_and_swap_16u(a, b, c)       __sync_val_compare_and_swap((a), (b), (c))
-#define vr_sync_lock_test_and_set_8u(a, b)              __sync_lock_test_and_set((a), (b))
-#define vr_sync_lock_test_and_set_p(a, b)               __sync_lock_test_and_set((a), (b))
-#define vr_sync_synchronize                             __sync_synchronize
-#define vr_ffs_32(a)                                    __builtin_ffs(a)
-#define vr_likely(a)                                    __builtin_expect(!!(a), 1)
-#define vr_unlikely(a)                                  __builtin_expect(!!(a), 0)
+#define vr_sync_sub_and_fetch_16u(a, b) __sync_sub_and_fetch((a), (b))
+#define vr_sync_sub_and_fetch_32u(a, b) __sync_sub_and_fetch((a), (b))
+#define vr_sync_sub_and_fetch_32s(a, b) __sync_sub_and_fetch((a), (b))
+#define vr_sync_sub_and_fetch_64u(a, b) __sync_sub_and_fetch((a), (b))
+#define vr_sync_sub_and_fetch_64s(a, b) __sync_sub_and_fetch((a), (b))
+#define vr_sync_add_and_fetch_16u(a, b) __sync_add_and_fetch((a), (b))
+#define vr_sync_add_and_fetch_32u(a, b) __sync_add_and_fetch((a), (b))
+#define vr_sync_add_and_fetch_64u(a, b) __sync_add_and_fetch((a), (b))
+#define vr_sync_fetch_and_add_32u(a, b) __sync_fetch_and_add((a), (b))
+#define vr_sync_fetch_and_add_64u(a, b) __sync_fetch_and_add((a), (b))
+#define vr_sync_fetch_and_or_16u(a, b) __sync_fetch_and_or((a), (b))
+#define vr_sync_and_and_fetch_16u(a, b) __sync_and_and_fetch((a), (b))
+#define vr_sync_and_and_fetch_32u(a, b) __sync_and_and_fetch((a), (b))
+#define vr_sync_bool_compare_and_swap_8s(a, b, c) __sync_bool_compare_and_swap((a), (b), (c))
+#define vr_sync_bool_compare_and_swap_8u(a, b, c) __sync_bool_compare_and_swap((a), (b), (c))
+#define vr_sync_bool_compare_and_swap_16u(a, b, c) __sync_bool_compare_and_swap((a), (b), (c))
+#define vr_sync_bool_compare_and_swap_32u(a, b, c) __sync_bool_compare_and_swap((a), (b), (c))
+#define vr_sync_bool_compare_and_swap_p(a, b, c) __sync_bool_compare_and_swap((a), (b), (c))
+#define vr_sync_val_compare_and_swap_16u(a, b, c) __sync_val_compare_and_swap((a), (b), (c))
+#define vr_sync_lock_test_and_set_8u(a, b) __sync_lock_test_and_set((a), (b))
+#define vr_sync_lock_test_and_set_p(a, b) __sync_lock_test_and_set((a), (b))
+#define vr_sync_synchronize __sync_synchronize
+#define vr_ffs_32(a) __builtin_ffs(a)
+#define vr_likely(a) __builtin_expect(!!(a), 1)
+#define vr_unlikely(a) __builtin_expect(!!(a), 0)
 
 #if defined(__linux__)
 #ifdef __KERNEL__
@@ -107,15 +107,15 @@ typedef unsigned int __u32;
  * BSD has no family AF_BRIDGE so to avoid to many ifdef in ksync and
  * vrouter code it is defined here in the same way as in LINUX
  */
-#define AF_BRIDGE    7
+#define AF_BRIDGE 7
 
 #if defined(_KERNEL)
-#define vr_printf(format, arg...)   printf(format, ##arg)
+#define vr_printf(format, arg...) printf(format, ##arg)
 #define ASSERT(x) KASSERT((x), (#x));
 #else
 #include <stdbool.h>
 #include <assert.h>
-#define vr_printf(format, arg...)   printf(format, ##arg)
+#define vr_printf(format, arg...) printf(format, ##arg)
 #define ASSERT(x) assert((x));
 #endif
 #endif /* __FreeBSD__ */

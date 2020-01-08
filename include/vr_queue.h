@@ -9,11 +9,11 @@
 #include "vr_os.h"
 
 struct vr_qelem {
-    struct vr_qelem *q_next;
+  struct vr_qelem *q_next;
 };
 
 struct vr_qhead {
-    struct vr_qelem *q_first;
+  struct vr_qelem *q_first;
 };
 
 void vr_queue_init(struct vr_qhead *);
